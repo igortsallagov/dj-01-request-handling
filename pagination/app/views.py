@@ -2,7 +2,7 @@ import csv
 from django.shortcuts import render_to_response, redirect
 from django.urls import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from app.settings import BUS_STATION_CSV
+from django.conf import settings
 
 
 def index(request):
@@ -10,7 +10,7 @@ def index(request):
 
 
 def bus_stations(request):
-    with open(BUS_STATION_CSV, encoding='cp1251') as file_data:
+    with open(settings.BUS_STATION_CSV, encoding='cp1251') as file_data:
         contents = csv.DictReader(file_data)
         stops_list = list()
         for row in contents:
