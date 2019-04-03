@@ -12,14 +12,8 @@ class FileList(TemplateView):
         # Реализуйте алгоритм подготавливающий контекстные данные для шаблона по примеру:
         files_list = os.listdir(settings.FILES_PATH)
         result = {'files': []}
-        if date:
-            date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
-            print(date)
         for item in files_list:
             file_info = os.stat(os.path.join(settings.FILES_PATH, item))
-            if date is not None and datetime.datetime.utcfromtimestamp(
-                    file_info.st_ctime).date() != date:
-                continue
             result['files'].append(
                 {
                     'name': item,
@@ -31,42 +25,14 @@ class FileList(TemplateView):
                     )
                 }
             )
-        # if date is None:
-        #     for item in files_list:
-        #         file_info = os.stat(os.path.join(settings.FILES_PATH, item))
-        #         result['files'].append(
-        #             {
-        #                 'name': item,
-        #                 'ctime': datetime.datetime.utcfromtimestamp(
-        #                     file_info.st_ctime
-        #                 ),
-        #                 'mtime': datetime.datetime.utcfromtimestamp(
-        #                     file_info.st_mtime
-        #                 )
-        #             }
-        #         )
-        #     return result
-        # else:
-        #     try:
-        #         date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
-        #     except ValueError:
-        #         date = datetime.datetime.strptime(date,
-        #                                           '%Y-%m-%d %H:%M:%S.%f').date()
-        #     for item in files_list:
-        #         file_info = os.stat(os.path.join(settings.FILES_PATH, item))
-        #         if datetime.datetime.utcfromtimestamp(file_info.st_ctime).date() == date:
-        #             result['files'].append(
-        #                 {
-        #                     'name': item,
-        #                     'ctime': datetime.datetime.utcfromtimestamp(
-        #                         file_info.st_ctime
-        #                     ),
-        #                     'mtime': datetime.datetime.utcfromtimestamp(
-        #                         file_info.st_mtime
-        #                     )
-        #                 }
-        #             )
-            return result
+        if date:
+            date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
+            result = {
+                'files': [item for item in result['files']
+                               if item['ctime'].date() == date],
+                'date': date
+            }
+        return result
 
 
 def file_content(request, name):
