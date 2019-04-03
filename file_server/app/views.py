@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime as dt
 import os
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -17,19 +17,18 @@ class FileList(TemplateView):
             result['files'].append(
                 {
                     'name': item,
-                    'ctime': datetime.datetime.utcfromtimestamp(
+                    'ctime': dt.utcfromtimestamp(
                         file_info.st_ctime
                     ),
-                    'mtime': datetime.datetime.utcfromtimestamp(
+                    'mtime': dt.utcfromtimestamp(
                         file_info.st_mtime
                     )
                 }
             )
         if date:
-            date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
             result = {
                 'files': [item for item in result['files']
-                               if item['ctime'].date() == date],
+                               if item['ctime'].date() == dt.strptime(date, '%Y-%m-%d').date()],
                 'date': date
             }
         return result
@@ -47,4 +46,4 @@ def file_content(request, name):
         request,
         'file_content.html',
         context={'file_name': name, 'file_content': file_contents}
-)
+    )
