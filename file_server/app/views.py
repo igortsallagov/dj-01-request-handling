@@ -1,8 +1,9 @@
 from datetime import datetime as dt
-import os
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.conf import settings
+from django.http import HttpResponseNotFound
+import os
 
 
 class FileList(TemplateView):
@@ -11,10 +12,10 @@ class FileList(TemplateView):
     def get_context_data(self, date=None):
         # Реализуйте алгоритм подготавливающий контекстные данные для шаблона по примеру:
         files_list = os.listdir(settings.FILES_PATH)
-        result = {'files': []}
+        files_data = list()
         for item in files_list:
             file_info = os.stat(os.path.join(settings.FILES_PATH, item))
-            result['files'].append(
+            files_data.append(
                 {
                     'name': item,
                     'ctime': dt.utcfromtimestamp(
@@ -25,12 +26,11 @@ class FileList(TemplateView):
                     )
                 }
             )
-        if date:
-            result = {
-                'files': [item for item in result['files']
-                               if item['ctime'].date() == dt.strptime(date, '%Y-%m-%d').date()],
-                'date': date
-            }
+        result = {
+            'files': [item for item in files_data if item['ctime'].date()
+                      == dt.strptime(date, '%Y-%m-%d').date()] if date else files_data,
+            'date': date
+        }
         return result
 
 
@@ -40,10 +40,10 @@ def file_content(request, name):
     if os.path.exists(file_path):
         with open(file_path, encoding='utf8') as contents:
             file_contents = contents.read()
+            return render(
+                request,
+                'file_content.html',
+                context={'file_name': name, 'file_content': file_contents}
+            )
     else:
-        file_contents = f'File {name} not found'
-    return render(
-        request,
-        'file_content.html',
-        context={'file_name': name, 'file_content': file_contents}
-    )
+        return HttpResponseNotFound('404. Not found')
